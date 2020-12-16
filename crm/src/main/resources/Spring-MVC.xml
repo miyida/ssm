@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       https://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd"
+>
+
+    <!-- Spring MVC 配置 -->
+
+    <!--  开启扫包
+
+     use-default-filters   默认是开启状态    默认会扫Spring 包含的注解
+      只负责扫描 Controller
+     -->
+    <context:component-scan base-package="com.wy" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+
+    <!--
+        /*  当前目录下面所有的文件
+        /**  当前目录下所有文件和子文件夹
+        当我们显式 使用  MVC 标签的时候  那么这么时候 我们就启动Spring Mvc 容器
+         Spring  @Controller   @Service .....
+         Spring MVC   @RequestParam
+    -->
+    <!-- 开启资源映射   存在多个的情况下配置多个即可
+         mapping 访问URL
+        location 映射项目中的文件路径
+    -->
+    <mvc:resources mapping="/static/**" location="/static/"></mvc:resources>
+    <mvc:resources mapping="/resources/**" location="/resources/"></mvc:resources>
+    <mvc:resources mapping="/upload/**" location="/upload/"></mvc:resources>
+
+    <!--&lt;!&ndash; 开启 Spring MVC 扫包 &ndash;&gt;-->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <!-- json消息转换器，contentType:application/json, defaultCharset:UTF-8-->
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"></bean>
+
+            <!-- string消息转换器，contentType:text/plain,defaultCharset:ISO-8859-1 -->
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="defaultCharset" value="UTF-8"></property>
+            </bean>
+        </mvc:message-converters>
+
+    </mvc:annotation-driven>
+
+    <!--   视图解析   帮我们  增加了前缀和后缀  -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--  前缀    -->
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <!-- 后缀 -->
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--设置
+       id      multipartResolver   内置
+    -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxInMemorySize" value="10000000"></property> <!--  内存大小 -->
+        <property name="maxUploadSize" value="50000000"></property><!-- 最大上传文件大小 -->
+        <property name="defaultEncoding" value="UTF-8"></property>     <!-- 编码格式-->
+        <property name="uploadTempDir" value="/upload/tmp"></property>   <!--  缓存临时目录 -->
+    </bean>
+
+
+    <!--  拦截器 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 拦截所有的请求 -->
+            <mvc:mapping path="/**"/>
+            <!-- 不拦截的内容-->
+            <!--静态内容-->
+            <mvc:exclude-mapping path="/resources/**"/>
+            <!--登陆页面以及登陆请求-->
+            <mvc:exclude-mapping path="/login"/>
+            <bean id="sessionInterceptor" class="com.wy.intercept.SimpleHandlerInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+    <!-- 将时间类型转换器的bean工厂加入到注解驱动中 -->
+    <mvc:annotation-driven conversion-service="simpleConversion"></mvc:annotation-driven>
+    <!-- 创建自定义时间格式转换器 -->
+    <bean id="simpleConversion" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <bean class="com.wy.handler.SimpleDateConverter"></bean>
+            </set>
+        </property>
+    </bean>
+
+
+</beans>

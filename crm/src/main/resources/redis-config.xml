@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc
+        https://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+       <!--如果同时引用多个 properties 可以使用以下配置-->
+    <!--<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">-->
+        <!--<property name="locations">-->
+            <!--<list>-->
+                <!--<value>classpath:redis.properties</value>-->
+            <!--</list>-->
+        <!--</property>-->
+        <!--&lt;!&ndash; 外部配置文件 数据出错 保证代码继续运行 &ndash;&gt;-->
+        <!--<property name="ignoreUnresolvablePlaceholders" value="true"></property>-->
+    <!--</bean>-->
+
+    <!--  ignore-unresolvable="true"  这个属性标识 忽略其他错误信息  因为spring 默认是单例启动 property-placeholder  如果发现启动了一个 就不会去加载另外一个   -->
+    <context:property-placeholder location="classpath:redis.properties" ignore-unresolvable="true"/>
+
+    <bean id="poolconfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redis.pool.maxTotal}"/>
+        <property name="maxIdle" value="${redis.pool.maxIdle}"/>
+        <property name="minIdle" value="${redis.pool.minIdle}"/>
+        <property name="lifo" value="${redis.pool.lifo}"/>
+        <property name="maxWaitMillis" value="${redis.pool.maxWait}"/>
+        <property name="testOnBorrow" value="true"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnReturn" value="true"/>
+        <!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
+        <property name="blockWhenExhausted" value="false"/>
+        <!-- 表示一个对象至少停留在idle状态的最短时间;然后才能被idle object evitor扫描并驱逐 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+    </bean>
+
+    <bean id="sharedJedisPool" class="redis.clients.jedis.ShardedJedisPool">
+        <constructor-arg index="0" ref="poolconfig"></constructor-arg>
+        <constructor-arg index="1">
+            <list>
+                <bean class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg index="0" value="${redis.uri.0}"></constructor-arg>
+                </bean>
+                <!-- <bean class="redis.clients.jedis.JedisShardInfo">
+                    <constructor-arg index="0" value="${redis.uri.1}"></constructor-arg>
+                </bean> -->
+            </list>
+        </constructor-arg>
+    </bean>
+</beans>

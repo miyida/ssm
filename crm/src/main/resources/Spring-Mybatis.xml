@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
+             http://www.springframework.org/schema/tx
+        https://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--  MyBatis 与  Spring之间的关联    连接数据库的操作  -->
+    <!--   引入 JDBC -->
+    <context:property-placeholder location="classpath:jdbc.properties" ignore-unresolvable="true"></context:property-placeholder>
+
+
+    <!-- 数据源 Druid-->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"></property>
+        <property name="url" value="${jdbc.url}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <!--   -->
+        <property name="validationQuery" value="select 1"></property>
+        <!-- 配置初始化大小、最小、最大 -->
+        <property name="initialSize" value="2"/>
+        <property name="minIdle" value="1"/>
+        <property name="maxActive" value="50"/>
+        <!-- 配置获取连接等待超时的时间 -->
+        <property name="maxWait" value="60000"/>
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="300000"/>
+        <property name="testWhileIdle" value="true"/>
+        <property name="testOnBorrow" value="false"/>
+        <property name="testOnReturn" value="false"/>
+    </bean>
+
+    <!--    MyBatis 配置托管给Spring       -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--  引入数据源 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 引入MyBatis配置文件 -->
+        <property name="configLocation" value="classpath:Mybatis-Config.xml"></property>
+        <!--  配置扫描MAPPER路径 -->
+        <property name="mapperLocations" value="classpath:com/wy/mapper/*.xml"/>
+        <!--  配置多级目录扫描mapper  -->
+        <!--<property name="mapperLocations" value="classpath:com/javasm/mapper/*/*.xml"/>-->
+    </bean>
+
+    <!-- 扫描 mybatis  dao 与 mapper   映射  接口 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.wy.dao"></property>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 开启注解的方式执行事务 -->
+    <tx:annotation-driven></tx:annotation-driven>
+
+    <!--  接管数据源  来自己处理事务 -->
+    <bean id="mdt" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--   引入数据源   -->
+    <tx:advice id="myadvice" transaction-manager="mdt">
+        <tx:attributes>
+            <!--  匹配切入事务的方法执行名称 -->
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="del*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="merge*" propagation="REQUIRED"/>
+            <tx:method name="upd*" propagation="REQUIRED"/>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="remove*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <!--  配置切点 -->
+        <aop:pointcut id="myPointcut" expression="execution(* com.wy.service.*.impl.*.*(..))"></aop:pointcut>
+        <!--  引入 advice -->
+        <aop:advisor advice-ref="myadvice" id="myadvisor" pointcut-ref="myPointcut"/>
+    </aop:config>
+
+
+</beans>

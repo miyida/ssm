@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wy.dao.SysUserGroupMapper" >
+  <resultMap id="BaseResultMap" type="com.wy.entity.SysUserGroup" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="group_name" property="groupName" jdbcType="VARCHAR" />
+    <result column="auth_desc" property="authDesc" jdbcType="VARCHAR" />
+    <result column="describle" property="describle" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, group_name, auth_desc, describle, status
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user_group
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  
+  
+  <select id="selectByParam" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user_group
+    <where>
+    <if test="id != null" >
+       and id = #{id}
+      </if>
+      <!-- 使用$占位符 直接拼接like模糊查询. 弊端是:会可能导致SQL注入 -->
+      <if test="groupName != null" >
+       and group_name like '%${groupName}%'
+      </if>
+      <if test="authDesc != null" >
+       and auth_desc = #{authDesc}
+      </if>
+      <if test="describle != null" >
+        and describle = #{describle}
+      </if>
+      <if test="status != null" >
+        and status = #{status}
+      </if>
+    </where>
+  </select>
+  
+  
+  <select id="getAll" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user_group
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from sys_user_group
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.wy.entity.SysUserGroup" keyColumn="id" keyProperty="id">
+    insert into sys_user_group (id, group_name, auth_desc, 
+      describle)
+    values (#{id,jdbcType=INTEGER}, #{groupName,jdbcType=VARCHAR}, #{authDesc,jdbcType=VARCHAR}, 
+      #{describle,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wy.entity.SysUserGroup" >
+    insert into sys_user_group
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="groupName != null" >
+        group_name,
+      </if>
+      <if test="authDesc != null" >
+        auth_desc,
+      </if>
+      <if test="describle != null" >
+        describle,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="groupName != null" >
+        #{groupName,jdbcType=VARCHAR},
+      </if>
+      <if test="authDesc != null" >
+        #{authDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="describle != null" >
+        #{describle,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wy.entity.SysUserGroup" >
+    update sys_user_group
+    <set >
+      <if test="groupName != null" >
+        group_name = #{groupName,jdbcType=VARCHAR},
+      </if>
+      <if test="authDesc != null" >
+        auth_desc = #{authDesc,jdbcType=VARCHAR},
+      </if>
+      <if test="describle != null" >
+        describle = #{describle,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wy.entity.SysUserGroup" >
+    update sys_user_group
+    set group_name = #{groupName,jdbcType=VARCHAR},
+      auth_desc = #{authDesc,jdbcType=VARCHAR},
+      describle = #{describle,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
