@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!--  这里面专门管理我们mybatis 配置  -->
+
+    <!--  开启日志输出   -->
+    <settings>
+        <!--<setting name="logImpl" value="STDOUT_LOGGING"/>-->
+        <setting name="logImpl" value="LOG4J2"/>
+        <!-- 多表联合查询的时候 或者有多条查询时候  如果开启了延时加载 那么 它自动按照
+             需要是否去进行加载 -->
+        <!-- 启用延迟加载 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!-- 积极加载改为消极加载 -->
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <!-- 调用toString，equals不触发延迟对象的加载 -->
+        <setting name="lazyLoadTriggerMethods" value=""/>
+        <!--&lt;!&ndash; 启用二级缓存 &ndash;&gt;-->
+        <!--<setting name="cacheEnabled" value="true"/>-->
+
+    </settings>
+
+    <!-- 取别名 -->
+    <typeAliases>
+        <!-- 针对单个实体对象 取别名应用  场景  传入参数（parameterType）  返回参数（resultType） -->
+        <!--<typeAlias type="com.javsm.entity.area" alias="areas"/>-->
+        <!--  针对这个包下面的实体对象取别名   默认 以对象名称取别名 且不区分大小写 -->
+        <package name="com.wy.entity"/>
+    </typeAliases>
+
+
+
+    <!--   pagehelper  配置  -->
+    <plugins>
+        <!-- com.github.pagehelper为PageHelper类所在包名 -->
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- 使用下面的方式配置参数，后面会有所有的参数介绍 -->
+            <property name="reasonable" value="true"/>
+        </plugin>
+    </plugins>
+
+
+</configuration>
